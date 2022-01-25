@@ -55,17 +55,89 @@ Ensure(util, get_path)
             };
     char *path;
 
+    dc_unsetenv(&env, &err, "PATH");
+    path = get_path(&env, &err);
+    assert_that(path, is_null);
+
     for(int i = 0; paths[i]; i++)
     {
         dc_setenv(&env, &err, "PATH", paths[i], true);
-        path = dc_getenv(&env, "PATH");
+        path = get_path(&env, &err);
         assert_that(path, is_equal_to_string(paths[i]));
+        assert_that(path, is_not_equal_to(paths[i]));
     }
 }
 
 Ensure(util, parse_path)
 {
+
 }
+
+Ensure(util, do_reset_state)
+{
+
+}
+
+Ensure(util, state_to_string)
+{
+    struct state state;
+    char *str;
+
+    state.in_redirect_regex = NULL;
+    state.out_redirect_regex = NULL;
+    state.err_redirect_regex = NULL;
+    state.path = NULL;
+    state.prompt = NULL;
+    state.max_line_length = 0;
+    state.current_line = NULL;
+    state.current_line_length = 0;
+    state.command = NULL;
+    state.fatal_error = false;
+
+    state.fatal_error = false;
+    str = state_to_string(&env, &state);
+    assert_that(str, is_equal_to_string("current_line = NULL, fatal_error = 0"));
+    free(str);
+
+    state.fatal_error = true;
+    str = state_to_string(&env, &state);
+    assert_that(str, is_equal_to_string("current_line = NULL, fatal_error = 1"));
+    free(str);
+
+    state.current_line = "";
+    state.fatal_error = false;
+    str = state_to_string(&env, &state);
+    assert_that(str, is_equal_to_string("current_line = \"\", fatal_error = 0"));
+    free(str);
+
+    state.current_line = "hello";
+    state.fatal_error = false;
+    str = state_to_string(&env, &state);
+    assert_that(str, is_equal_to_string("current_line = \"hello\", fatal_error = 0"));
+    free(str);
+
+    state.current_line = "world";
+    state.fatal_error = true;
+    str = state_to_string(&env, &state);
+    assert_that(str, is_equal_to_string("current_line = \"world\", fatal_error = 1"));
+    free(str);
+}
+
+TestSuite *util_tests(void)
+{
+    TestSuite *suite;
+
+    suite = create_test_suite();
+    add_test_with_context(suite, util, get_prompt);
+    add_test_with_context(suite, util, get_path);
+    add_test_with_context(suite, util, parse_path);
+    add_test_with_context(suite, util, do_reset_state);
+    add_test_with_context(suite, util, state_to_string);
+
+    return suite;
+}
+
+
 
 //Ensure(util, do_reset_state)
 //{
@@ -121,92 +193,5 @@ Ensure(util, parse_path)
 //    assert_that(err->err_code, is_equal_to(0));
 //}
 //
-//Ensure(util, state_to_string)
-//{
-//    struct state state;
-//    char *str;
-//
-//    state.in_redirect_regex = NULL;
-//    state.out_redirect_regex = NULL;
-//    state.err_redirect_regex = NULL;
-//    state.path = NULL;
-//    state.prompt = NULL;
-//    state.max_line_length = 0;
-//    state.current_line = NULL;
-//    state.current_line_length = 0;
-//    state.command = NULL;
-//    state.fatal_error = false;
-//
-//    state.fatal_error = false;
-//    str = state_to_string(&env, &state);
-//    assert_that(str, is_equal_to_string("current_line = NULL, fatal_error = 0"));
-//    free(str);
-//
-//    state.fatal_error = true;
-//    str = state_to_string(&env, &state);
-//    assert_that(str, is_equal_to_string("current_line = NULL, fatal_error = 1"));
-//    free(str);
-//
-//    state.current_line = "";
-//    state.fatal_error = false;
-//    str = state_to_string(&env, &state);
-//    assert_that(str, is_equal_to_string("current_line = \"\", fatal_error = 0"));
-//    free(str);
-//
-//    state.current_line = "hello";
-//    state.fatal_error = false;
-//    str = state_to_string(&env, &state);
-//    assert_that(str, is_equal_to_string("current_line = \"hello\", fatal_error = 0"));
-//    free(str);
-//
-//    state.current_line = "world";
-//    state.fatal_error = true;
-//    str = state_to_string(&env, &state);
-//    assert_that(str, is_equal_to_string("current_line = \"world\", fatal_error = 1"));
-//    free(str);
-//}
-//
-//char *state_to_string(const struct dc_posix_env *env, const struct state *state)
-//{
-//    size_t len;
-//    char *line;
-//
-//    if(state->current_line == NULL)
-//    {
-//        len = strlen("current_line = NULL");
-//    }
-//    else
-//    {
-//        len = strlen("current_line = \"\"");
-//        len += state->current_line_length;
-//    }
-//
-//    len += strlen(", fatal_error = ");
-//    // +1 for 0 or 1 for the fatal_error and +1 for the null byte
-//    line = malloc(len + 1 + 1);
-//
-//    if(state->current_line == NULL)
-//    {
-//        sprintf(line, "current_line = NULL, fatal_error = %d", state->fatal_error);
-//    }
-//    else
-//    {
-//        sprintf(line, "current_line = \"%s\", fatal_error = %d", state->current_line, state->fatal_error);
-//    }
-//
-//    return line;
-//}
 
-TestSuite *util_tests(void)
-{
-    TestSuite *suite;
 
-    suite = create_test_suite();
-    add_test_with_context(suite, util, get_prompt);
-    add_test_with_context(suite, util, get_path);
-    add_test_with_context(suite, util, parse_path);
-//    add_test_with_context(suite, util, do_reset_state);
-//    add_test_with_context(suite, util, state_to_string);
-
-    return suite;
-}
