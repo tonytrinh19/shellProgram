@@ -1,13 +1,14 @@
 #include "util.h"
 
-const char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
+char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
 {
+    char *dollarSign = strdup("$ ");
     char *prompt;
     prompt = dc_getenv(env, "PS1");
 
     if (!prompt)
     {
-        return "$ ";
+        return dollarSign;
     }
     return prompt;
 }
@@ -17,7 +18,21 @@ char *get_path(const struct dc_posix_env *env, struct dc_error *err)
     return dc_getenv(env, "PATH");
 }
 
-char *state_to_string(const struct dc_posix_env *env, const struct state *state)
+void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state)
+{
+
+}
+
+void display_state(const struct dc_posix_env *env, const struct state *state, FILE *stream)
+{
+    char *str;
+    struct dc_error err;
+    str = state_to_string(env, &err, state);
+    fprintf(stream, "%s\n", str);
+    free(str);
+}
+
+char *state_to_string(const struct dc_posix_env *env,  struct dc_error *err, const struct state *state)
 {
     size_t len;
     char *line;
@@ -46,13 +61,4 @@ char *state_to_string(const struct dc_posix_env *env, const struct state *state)
     }
 
     return line;
-}
-
-void display_state(const struct dc_posix_env *env, const struct state *state, FILE *stream)
-{
-    char *str;
-
-    str = state_to_string(env, state);
-    fprintf(stream, "%s\n", str);
-    free(str);
 }
