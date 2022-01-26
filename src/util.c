@@ -18,9 +18,27 @@ char *get_path(const struct dc_posix_env *env, struct dc_error *err)
     return dc_getenv(env, "PATH");
 }
 
+char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
+                  const char *path_str)
+{
+    char *bruh = NULL;
+    return &bruh;
+}
+
 void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state)
 {
-
+    state->current_line        = NULL;
+    state->current_line_length = 0;
+    state->fatal_error         = false;
+    // Have to deallocate all of command's variables too.
+    state->command             = NULL;
+    err->message               = NULL;
+    err->file_name             = NULL;
+    err->function_name         = NULL;
+    err->line_number           = 0;
+    err->type                  = 0;
+    err->reporter              = NULL;
+    err->err_code              = 0;
 }
 
 void display_state(const struct dc_posix_env *env, const struct state *state, FILE *stream)
