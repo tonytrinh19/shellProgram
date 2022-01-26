@@ -1,3 +1,4 @@
+#include <dc_posix/dc_string.h>
 #include "util.h"
 
 char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
@@ -21,8 +22,33 @@ char *get_path(const struct dc_posix_env *env, struct dc_error *err)
 char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
                   const char *path_str)
 {
-    char *bruh = NULL;
-    return &bruh;
+    char **dirs;
+    char *str          = dc_strdup(env, err, path_str);
+    const char *colon  = ":";
+    char *token;
+    char *rest         = str;
+    char *rest2        = dc_strdup(env, err, str);
+    int index          = 0;
+    size_t num         = 0;
+
+    while((token = dc_strtok_r(env, rest2, colon, &rest2)))
+    {
+        num++;
+    }
+
+    dirs = dc_calloc(env, err, num + 1, sizeof(char *));
+
+    if (dc_error_has_no_error(err))
+    {
+        while((token = dc_strtok_r(env, rest, colon, &rest)))
+        {
+            dirs[index] = token;
+            index++;
+        }
+    }
+
+    dirs[index] = NULL;
+    return dirs;
 }
 
 void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state)

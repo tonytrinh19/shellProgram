@@ -40,27 +40,28 @@ Ensure(util, get_path)
 {
     static const char *paths[] =
             {
-                "",
-                ".",
-                "abc",
-                "abc:def",
-                "/usr/bin:.",
-                ".:/usr/bin",
-                ":",
-                "/usr/bin:/bin:/usr/local/bin",
-                NULL,
+                    "",
+                    ".",
+                    "abc",
+                    "abc:def",
+                    "/usr/bin:.",
+                    ".:/usr/bin",
+                    ":",
+                    "/usr/bin:/bin:/usr/local/bin",
+                    NULL,
             };
     char *path;
 
-    unsetenv("PATH");
-    path = getenv("PATH");
+    dc_unsetenv(&environ, &error, "PATH");
+    path = get_path(&environ, &error);
     assert_that(path, is_null);
 
     for(int i = 0; paths[i]; i++)
     {
-        setenv("PATH", paths[i], true);
-        path = getenv("PATH");
+        dc_setenv(&environ, &error, "PATH", paths[i], true);
+        path = get_path(&environ, &error);
         assert_that(path, is_equal_to_string(paths[i]));
+        assert_that(path, is_not_equal_to(path[i]));
     }
 }
 
@@ -149,7 +150,6 @@ static void check_state_reset(const struct dc_error *error, const struct state *
     assert_that(error->file_name, is_null);
     assert_that(error->function_name, is_null);
     assert_that(error->line_number, is_equal_to(0));
-    assert_that(error->type, is_equal_to(0));
     assert_that(error->type, is_equal_to(0));
     assert_that(error->reporter, is_null);
     assert_that(error->err_code, is_equal_to(0));
