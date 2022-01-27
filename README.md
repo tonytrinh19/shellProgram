@@ -30,3 +30,9 @@ cmake --build cmake-build-debug --clean-first
 cmake --build cmake-build-debug --target docs
 cmake --build cmake-build-debug --target format
 ```
+## State Table
+![state_table.png](state_table.png)
+
+## State Transition Diagram
+![state_transition_diagram.png](state_transition_diagram.png)
+
