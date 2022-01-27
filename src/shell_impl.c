@@ -10,9 +10,12 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
     regex_t *out_regex;
     regex_t *err_regex;
 
-    state = (struct state*) arg;
-    state->fatal_error = false;
+    state                  = (struct state*) arg;
+    state->fatal_error     = false;
     state->max_line_length = (size_t) sysconf(_SC_ARG_MAX);
+    state->stdin           = stdin;
+    state->stdout          = stdout;
+    state->stderr          = stderr;
 
     if (dc_error_has_error(err))
     {
@@ -65,8 +68,7 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
         state->fatal_error = true;
         return ERROR;
     }
-    state->path = parsed_path;
-
+    state->path   = parsed_path;
     state->prompt = get_prompt(env, err);
     if (dc_error_has_error(err))
     {
@@ -80,18 +82,53 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
     return READ_COMMANDS;
 }
 
-//int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
-//                  void *arg)
-//{
-//    return 1;
-//}
-//
-//int reset_state(const struct dc_posix_env *env, struct dc_error *err,
-//                void *arg)
-//{
-//    return 1;
-//}
-//
+int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
+                  void *arg)
+{
+    struct state *state;
+    size_t index;
+    state = (struct state*) arg;
+
+    state->fatal_error = false;
+
+    free(state->in_redirect_regex);
+    state->in_redirect_regex = NULL;
+
+    free(state->out_redirect_regex);
+    state->out_redirect_regex = NULL;
+
+    free(state->err_redirect_regex);
+    state->err_redirect_regex = NULL;
+
+    state->stdin = stdin;
+    state->stdout = stdout;
+    state->stderr = stderr;
+
+    free(state->prompt);
+    state->prompt = NULL;
+
+    state->max_line_length = 0;
+    state->current_line_length = 0;
+
+    index = 0;
+    while (state->path[index])
+    {
+        free(state->path[index]);
+        state->path[index] = NULL;
+    }
+    state->path = NULL;
+    return DC_FSM_EXIT;
+}
+
+int reset_state(const struct dc_posix_env *env, struct dc_error *err,
+                void *arg)
+{
+    struct state *state;
+    state = (struct state*) arg;
+    do_reset_state(env, err, state);
+    return READ_COMMANDS;
+}
+
 //int read_commands(const struct dc_posix_env *env, struct dc_error *err,
 //                  void *arg)
 //{
