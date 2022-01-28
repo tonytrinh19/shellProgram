@@ -4,19 +4,27 @@
 char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
 {
     char *dollarSign = strdup("$ ");
+    char *promptTemp;
     char *prompt;
-    prompt = dc_getenv(env, "PS1");
+    promptTemp = dc_getenv(env, "PS1");
 
-    if (!prompt)
+    if (!promptTemp)
     {
         return dollarSign;
     }
+    prompt = dc_malloc(env, err, strlen(promptTemp) * sizeof(char));
+    prompt = strdup(promptTemp);
     return prompt;
 }
 
 char *get_path(const struct dc_posix_env *env, struct dc_error *err)
 {
-    return dc_getenv(env, "PATH");
+    char *pathTemp;
+    char *path;
+    pathTemp = dc_getenv(env, "PATH");
+    if (!pathTemp) return NULL;
+    path = strdup(pathTemp);
+    return path;
 }
 
 char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
@@ -42,7 +50,9 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
     {
         while((token = dc_strtok_r(env, rest, colon, &rest)))
         {
-            dirs[index] = token;
+            dirs[index] = calloc(strlen(token + 1), sizeof(char));
+            dirs[index] = strdup(token);
+            dirs[index][strlen(token)] = '\0';
             index++;
         }
     }

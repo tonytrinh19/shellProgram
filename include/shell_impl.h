@@ -20,6 +20,7 @@
 
 #include <unistd.h>
 #include <dc_posix/dc_stdlib.h>
+#include <dc_posix/dc_stdio.h>
 #include "execute.h"
 #include "shell.h"
 #include "state.h"

@@ -87,16 +87,20 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
 {
     struct state *state;
     size_t index;
+
     state = (struct state*) arg;
 
     state->fatal_error = false;
 
+    regfree(state->in_redirect_regex);
     free(state->in_redirect_regex);
     state->in_redirect_regex = NULL;
 
+    regfree(state->out_redirect_regex);
     free(state->out_redirect_regex);
     state->out_redirect_regex = NULL;
 
+    regfree(state->err_redirect_regex);
     free(state->err_redirect_regex);
     state->err_redirect_regex = NULL;
 
@@ -129,8 +133,8 @@ int reset_state(const struct dc_posix_env *env, struct dc_error *err,
     return READ_COMMANDS;
 }
 
-//int read_commands(const struct dc_posix_env *env, struct dc_error *err,
-//                  void *arg)
-//{
-//    return 1;
-//}
+int read_commands(const struct dc_posix_env *env, struct dc_error *err,
+                  void *arg)
+{
+    return 1;
+}

@@ -30,38 +30,41 @@ Ensure(util, get_prompt)
     unsetenv("PS1");
     prompt = get_prompt(&environ, &error);
     assert_that(prompt, is_equal_to_string("$ "));
+    free(prompt);
 
     setenv("PS1", "ABC", true);
     prompt = get_prompt(&environ, &error);
     assert_that(prompt, is_equal_to_string("ABC"));
+    free(prompt);
 }
 
 Ensure(util, get_path)
 {
     static const char *paths[] =
             {
-                    "",
-                    ".",
-                    "abc",
-                    "abc:def",
-                    "/usr/bin:.",
-                    ".:/usr/bin",
-                    ":",
-                    "/usr/bin:/bin:/usr/local/bin",
-                    NULL,
+                "",
+                ".",
+                "abc",
+                "abc:def",
+                "/usr/bin:.",
+                ".:/usr/bin",
+                ":",
+                "/usr/bin:/bin:/usr/local/bin",
+                NULL,
             };
     char *path;
 
-    dc_unsetenv(&environ, &error, "PATH");
+    unsetenv("PATH");
     path = get_path(&environ, &error);
     assert_that(path, is_null);
 
     for(int i = 0; paths[i]; i++)
     {
-        dc_setenv(&environ, &error, "PATH", paths[i], true);
+        setenv("PATH", paths[i], true);
         path = get_path(&environ, &error);
         assert_that(path, is_equal_to_string(paths[i]));
-        assert_that(path, is_not_equal_to(path[i]));
+        assert_that(path, is_not_equal_to(paths[i]));
+        free(path);
     }
 }
 
@@ -84,10 +87,14 @@ static void test_parse_path(const char *path_str, char **dirs)
     for(i = 0; dirs[i] && path_dirs[i]; i++)
     {
         assert_that(path_dirs[i], is_equal_to_string(dirs[i]));
+        free(dirs[i]);
+        free(path_dirs[i]);
     }
 
     assert_that(dirs[i], is_null);
     assert_that(path_dirs[i], is_null);
+    free(dirs);
+    free(path_dirs);
 }
 
 Ensure(util, do_reset_state)
@@ -151,6 +158,7 @@ static void check_state_reset(const struct dc_error *error, const struct state *
     assert_that(error->function_name, is_null);
     assert_that(error->line_number, is_equal_to(0));
     assert_that(error->type, is_equal_to(0));
+    assert_that(error->type, is_equal_to(0));
     assert_that(error->reporter, is_null);
     assert_that(error->err_code, is_equal_to(0));
 }
@@ -172,23 +180,29 @@ Ensure(util, state_to_string)
     state.fatal_error = false;
 
     state.fatal_error = false;
+    state.current_line = NULL;
+    state.current_line_length = 0;
     str = state_to_string(&environ, &error, &state);
     assert_that(str, is_equal_to_string("current_line = NULL, fatal_error = 0"));
     free(str);
 
     state.fatal_error = true;
+    state.current_line = NULL;
+    state.current_line_length = 0;
     str = state_to_string(&environ, &error, &state);
     assert_that(str, is_equal_to_string("current_line = NULL, fatal_error = 1"));
     free(str);
 
     state.current_line = strdup("");
     state.fatal_error = false;
+    state.current_line_length = 0;
     str = state_to_string(&environ, &error, &state);
     assert_that(str, is_equal_to_string("current_line = \"\", fatal_error = 0"));
     free(str);
     free(state.current_line);
 
     state.current_line = strdup("hello");
+    state.current_line_length = strlen(state.current_line);
     state.fatal_error = false;
     str = state_to_string(&environ, &error, &state);
     assert_that(str, is_equal_to_string("current_line = \"hello\", fatal_error = 0"));
@@ -196,6 +210,7 @@ Ensure(util, state_to_string)
     free(state.current_line);
 
     state.current_line = strdup("world");
+    state.current_line_length = strlen(state.current_line);
     state.fatal_error = true;
     str = state_to_string(&environ, &error, &state);
     assert_that(str, is_equal_to_string("current_line = \"world\", fatal_error = 1"));
