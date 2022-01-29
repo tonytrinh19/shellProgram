@@ -1,4 +1,6 @@
+#include <string.h>
 #include "shell_impl.h"
+#include "input.h"
 
 int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
 {
@@ -13,10 +15,6 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
     state                  = (struct state*) arg;
     state->fatal_error     = false;
     state->max_line_length = (size_t) sysconf(_SC_ARG_MAX);
-    state->stdin           = stdin;
-    state->stdout          = stdout;
-    state->stderr          = stderr;
-
     if (dc_error_has_error(err))
     {
         state->fatal_error = true;
@@ -104,10 +102,6 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     free(state->err_redirect_regex);
     state->err_redirect_regex = NULL;
 
-    state->stdin = stdin;
-    state->stdout = stdout;
-    state->stderr = stderr;
-
     free(state->prompt);
     state->prompt = NULL;
 
@@ -136,5 +130,31 @@ int reset_state(const struct dc_posix_env *env, struct dc_error *err,
 int read_commands(const struct dc_posix_env *env, struct dc_error *err,
                   void *arg)
 {
-    return 1;
+    struct state *state;
+    state = (struct state*) arg;
+    size_t len;
+    char *str;
+
+    const char *cwd = dc_get_working_dir(env, err);
+    if (dc_error_has_error(err))
+    {
+        state->fatal_error = true;
+        return ERROR;
+    }
+
+    char *fullPrompt = malloc(1 + strlen(cwd) + 1 + 1 + strlen(state->prompt) + 1);
+    sprintf(fullPrompt, "[%s] %s", cwd, state->prompt);
+    size_t leng = strlen(fullPrompt);
+    fullPrompt[leng] = '\0';
+    fprintf(state->stdout, "%s", fullPrompt);
+
+    str = read_command_line(env, err, state->stdin, &len);
+    state->current_line = str;
+    state->current_line_length = dc_strlen(env, str);
+    if (dc_strcmp(env, str, "") == 0 || !str)
+    {
+        return RESET_STATE;
+    }
+
+    return SEPARATE_COMMANDS;
 }

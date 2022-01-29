@@ -18,10 +18,11 @@
  *  along with dc_shell.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <dc_posix/dc_posix_env.h>
-#include <dc_posix/dc_stdio.h>
+#include <dc_posix/dc_string.h>
 #include <dc_util/strings.h>
+#include <dc_posix/dc_posix_env.h>
 #include <dc_posix/dc_stdlib.h>
+#include <dc_posix/dc_stdio.h>
 #include <stdio.h>
 
 /**

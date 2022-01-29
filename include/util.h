@@ -20,9 +20,6 @@
 
 #include "shell.h"
 #include "state.h"
-#include <malloc.h>
-#include <string.h>
-#include <dc_posix/dc_stdlib.h>
 #include <dc_posix/dc_posix_env.h>
 #include <stdio.h>
 
@@ -62,7 +59,6 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
  *
  * @param env the posix environment.
  * @param err the error object
- * @param state the state to display.
  */
 void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state);
 

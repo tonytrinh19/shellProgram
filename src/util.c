@@ -1,4 +1,7 @@
 #include <dc_posix/dc_string.h>
+#include <string.h>
+#include <dc_posix/dc_stdlib.h>
+#include <stdlib.h>
 #include "util.h"
 
 char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
