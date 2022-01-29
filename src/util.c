@@ -15,7 +15,7 @@ char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
     {
         return dollarSign;
     }
-    prompt = dc_malloc(env, err, strlen(promptTemp) * sizeof(char));
+    free(dollarSign);
     prompt = strdup(promptTemp);
     return prompt;
 }
@@ -39,10 +39,11 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
     char *token;
     char *rest         = str;
     char *rest2        = dc_strdup(env, err, str);
+    char *temp         = rest2;
     int index          = 0;
     size_t num         = 0;
 
-    while((token = dc_strtok_r(env, rest2, colon, &rest2)))
+    while((dc_strtok_r(env, rest2, colon, &rest2)))
     {
         num++;
     }
@@ -53,24 +54,25 @@ char **parse_path(const struct dc_posix_env *env, struct dc_error *err,
     {
         while((token = dc_strtok_r(env, rest, colon, &rest)))
         {
-            dirs[index] = calloc(strlen(token + 1), sizeof(char));
             dirs[index] = strdup(token);
-            dirs[index][strlen(token)] = '\0';
             index++;
         }
     }
-
+    free(str);
+    free(temp);
     dirs[index] = NULL;
     return dirs;
 }
 
 void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct state *state)
 {
+    free(state->current_line);
     state->current_line        = NULL;
     state->current_line_length = 0;
     state->fatal_error         = false;
     // Have to deallocate all of command's variables too.
     state->command             = NULL;
+    free(err->message);
     err->message               = NULL;
     err->file_name             = NULL;
     err->function_name         = NULL;

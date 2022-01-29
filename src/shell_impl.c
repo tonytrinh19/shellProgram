@@ -5,7 +5,7 @@
 int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
 {
     struct state *state;
-    const char *path_str;
+    char *path_str;
     char **parsed_path;
     int status;
     regex_t *in_regex;
@@ -77,6 +77,8 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
     state->current_line = NULL;
     state->current_line_length = 0;
     state->command = NULL;
+    free(path_str);
+
     return READ_COMMANDS;
 }
 
@@ -142,11 +144,7 @@ int read_commands(const struct dc_posix_env *env, struct dc_error *err,
         return ERROR;
     }
 
-    char *fullPrompt = malloc(1 + strlen(cwd) + 1 + 1 + strlen(state->prompt) + 1);
-    sprintf(fullPrompt, "[%s] %s", cwd, state->prompt);
-    size_t leng = strlen(fullPrompt);
-    fullPrompt[leng] = '\0';
-    fprintf(state->stdout, "%s", fullPrompt);
+    fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
 
     str = read_command_line(env, err, state->stdin, &len);
     state->current_line = str;

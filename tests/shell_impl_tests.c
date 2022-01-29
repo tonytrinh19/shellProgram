@@ -9,9 +9,9 @@ static void test_init_state(const char *expected_prompt, FILE *in, FILE *out, FI
 static void test_destroy_state(bool initial_fatal);
 static void test_reset_state(const char *expected_prompt, bool initial_fatal);
 static void test_read_commands(const char *command, const char *expected_command, int expected_return);
-static void test_separate_commands(const char *command, const char *expected_command, int expected_return);
-static void test_parse_commands(const char *command, char *expected_command, size_t expected_argc);
-static void test_execute_command(const char *command, int expected_next_state, const char *expected_exit_code, const char *expected_error_message);
+//static void test_separate_commands(const char *command, const char *expected_command, int expected_return);
+//static void test_parse_commands(const char *command, char *expected_command, size_t expected_argc);
+//static void test_execute_command(const char *command, int expected_next_state, const char *expected_exit_code, const char *expected_error_message);
 
 Describe(shell_impl);
 
