@@ -1,12 +1,16 @@
 #include <string.h>
+#include <unistd.h>
+#include <dc_posix/dc_string.h>
+#include <stdlib.h>
+#include <dc_util/filesystem.h>
 #include "shell_impl.h"
 #include "input.h"
+#include "util.h"
 
 int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
 {
     struct state *state;
     char *path_str;
-    char **parsed_path;
     int status;
     regex_t *in_regex;
     regex_t *out_regex;
@@ -60,13 +64,13 @@ int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
         state->fatal_error = true;
         return ERROR;
     }
-    parsed_path = parse_path(env, err, path_str);
+    state->path  = parse_path(env, err, path_str);
     if (dc_error_has_error(err))
     {
         state->fatal_error = true;
         return ERROR;
     }
-    state->path   = parsed_path;
+
     state->prompt = get_prompt(env, err);
     if (dc_error_has_error(err))
     {
@@ -107,6 +111,9 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     free(state->prompt);
     state->prompt = NULL;
 
+    free(state->current_line);
+    state->current_line = NULL;
+
     state->max_line_length = 0;
     state->current_line_length = 0;
 
@@ -116,7 +123,10 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
         free(state->path[index]);
         state->path[index] = NULL;
     }
+    free(state->path[index]);
+    free(state->path);
     state->path = NULL;
+    free(err->message);
     return DC_FSM_EXIT;
 }
 
@@ -137,22 +147,67 @@ int read_commands(const struct dc_posix_env *env, struct dc_error *err,
     size_t len;
     char *str;
 
-    const char *cwd = dc_get_working_dir(env, err);
+    char *cwd = dc_get_working_dir(env, err);
+
+    fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
+
+    str = read_command_line(env, err, state->stdin, &len);
+    if(dc_error_has_error(err))
+    {
+        state->fatal_error = true;
+        return ERROR;
+    }
+    state->current_line = strdup(str);
+    state->current_line_length = dc_strlen(env, str);
+
+    free(cwd);
+    free(str);
+    if (len == 0)
+    {
+        return RESET_STATE;
+    }
+    return SEPARATE_COMMANDS;
+}
+
+int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
+                      void *arg)
+{
+    struct state *state;
+
+    state = (struct state *) arg;
+
+    state->fatal_error = false;
+
+    state->command = dc_calloc(env, err, 1, sizeof(struct command));
+
+    if (dc_error_has_error(err))
+    {
+        state->fatal_error = true;
+        return ERROR;
+    }
+    state->command->line = strdup(state->current_line);
+    state->command->command = NULL;
+    state->command->argc = 0;
+    state->command->argv = NULL;
+    state->command->stdin_file = NULL;
+    state->command->stdout_file = NULL;
+    state->command->stderr_file = NULL;
+    state->command->stderr_overwrite = false;
+    state->command->stdout_overwrite = false;
+    state->command->exit_code = 0;
+    state->command->stderr_file = NULL;
+
     if (dc_error_has_error(err))
     {
         state->fatal_error = true;
         return ERROR;
     }
 
-    fprintf(state->stdout, "[%s] %s", cwd, state->prompt);
+    return PARSE_COMMANDS;
+}
 
-    str = read_command_line(env, err, state->stdin, &len);
-    state->current_line = str;
-    state->current_line_length = dc_strlen(env, str);
-    if (dc_strcmp(env, str, "") == 0 || !str)
-    {
-        return RESET_STATE;
-    }
-
-    return SEPARATE_COMMANDS;
+int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
+                   void *arg)
+{
+    return 5;
 }

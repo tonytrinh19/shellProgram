@@ -18,13 +18,8 @@
  *  along with dc_shell.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <dc_util/filesystem.h>
-#include <dc_posix/dc_stdlib.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include "execute.h"
 #include "shell.h"
-#include "util.h"
 
 /**
  * Set up the initial state:
