@@ -24,14 +24,6 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
     char *expanded_stdout_file;
     char *expanded_stderr_file;
 
-//    char* token;
-//    char* rest = strdup(command->line);
-//    char* temp = rest;
-//
-//    token = strtok_r(rest, " ", &rest);
-//    printf("command: %s\n", token);
-//    command->command = strdup(token);
-
     string  = strdup(command->line);
     matched = regexec(state->err_redirect_regex,
                       string,
@@ -62,6 +54,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         size_t size = length - offset;
         str2 = dc_malloc(env, err, sizeof(char) * size);
         strncpy(str2, &str[offset], size);
+        str2[size] = '\0';
 
         dc_str_trim(env, str2);
         dc_expand_path(env, err, &expanded_stderr_file, str2);
@@ -99,6 +92,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         size_t size = length - offset;
         str2 = dc_malloc(env, err, sizeof(char) * size);
         strncpy(str2, &str[offset], size);
+        str2[size] = '\0';
 
         dc_str_trim(env, str2);
         dc_expand_path(env, err, &expanded_stdout_file, str2);
@@ -130,7 +124,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         size_t size = length - offset;
         str2 = dc_malloc(env, err, sizeof(char) * size);
         strncpy(str2, &str[offset], size);
-
+        str2[size] = '\0';
         dc_str_trim(env, str2);
         dc_expand_path(env, err, &expanded_stdin_file, str2);
         command->stdin_file = expanded_stdin_file;
@@ -171,10 +165,16 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
     command->argv   = argv;
     command->argc   = sizeArray;
 
-
 //    free(rest);
     free(string);
     free(temp);
+    //    char* token;
+//    char* rest = strdup(command->line);
+//    char* temp = rest;
+//
+//    token = strtok_r(rest, " ", &rest);
+//    printf("command: %s\n", token);
+//    command->command = strdup(token);
 }
 
 void destroy_command(const struct dc_posix_env *env, struct command *command)
