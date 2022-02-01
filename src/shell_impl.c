@@ -225,6 +225,15 @@ int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
     return EXECUTE_COMMANDS;
 }
 
+int execute_commands(const struct dc_posix_env *env, struct dc_error *err,
+                     void *arg)
+{
+
+
+
+    return RESET_STATE;
+}
+
 int do_exit(const struct dc_posix_env *env, struct dc_error *err, void *arg)
 {
     struct state *state;
