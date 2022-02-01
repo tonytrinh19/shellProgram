@@ -385,27 +385,27 @@ static void test_parse_commands(const char *command, const char *expected_comman
 //    fclose(err);
 //    free(in_buf);
 //}
-//
-//Ensure(shell_impl, do_exit)
-//{
-//    struct state state;
-//    int next_state;
-//
-//    next_state = init_state(&environ, &error, &state);
-//    assert_false(dc_error_has_error(&error));
-//    assert_false(state.fatal_error);
-//    assert_that(next_state, is_equal_to(READ_COMMANDS));
-//    state.current_line_length = 10;
-//
-//    next_state = do_exit(&environ, &error, &state);
-//    assert_false(dc_error_has_error(&error));
-//    assert_false(state.fatal_error);
-//    assert_that(next_state, is_equal_to(DESTROY_STATE));
-//    assert_that(state.current_line_length, is_equal_to(0));
-//
-//    destroy_state(&environ, &error, &state);
-//}
-//
+
+Ensure(shell_impl, do_exit)
+{
+    struct state state;
+    int next_state;
+
+    next_state = init_state(&environ, &error, &state);
+    assert_false(dc_error_has_error(&error));
+    assert_false(state.fatal_error);
+    assert_that(next_state, is_equal_to(READ_COMMANDS));
+    state.current_line_length = 10;
+
+    next_state = do_exit(&environ, &error, &state);
+    assert_false(dc_error_has_error(&error));
+    assert_false(state.fatal_error);
+    assert_that(next_state, is_equal_to(DESTROY_STATE));
+    assert_that(state.current_line_length, is_equal_to(0));
+
+    destroy_state(&environ, &error, &state);
+}
+
 //Ensure(shell_impl, handle_error)
 //{
 //    test_handle_error(NULL, true, 4, "foo", "internal error (4) foo\n", DESTROY_STATE);
@@ -465,7 +465,7 @@ TestSuite *shell_impl_tests(void)
     add_test_with_context(suite, shell_impl, separate_commands);
     add_test_with_context(suite, shell_impl, parse_commands);
 //    add_test_with_context(suite, shell_impl, execute_commands);
-//    add_test_with_context(suite, shell_impl, do_exit);
+    add_test_with_context(suite, shell_impl, do_exit);
 //    add_test_with_context(suite, shell_impl, handle_error);
 
     return suite;

@@ -215,5 +215,4 @@ void destroy_command(const struct dc_posix_env *env, struct command *command)
     command->stderr_file = NULL;
 
     command->stderr_overwrite = false;
-    int exit_code;
 }

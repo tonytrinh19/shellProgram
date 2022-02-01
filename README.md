@@ -1,27 +1,13 @@
-# template
-A template for assignments and projects.
+
 ## Setup
 ```
 mkdir cmake-build-debug
 ```
 
 ## Source Code Additions
-Add your source files to the CMakeLists.txt:
-
-```
-set(HEADER_LIST [files])
-set(SOURCE_LIST [files])
-```
-
 ```
 cmake -DCMAKE_C_COMPILER="gcc" -DCMAKE_CXX_COMPILER="g++" -S . -B cmake-build-debug
 ```
-or:
-
-```
-cmake -DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang++" -S . -B cmake-build-debug
-```
-
 ## Build 
 Examples:
 ```
