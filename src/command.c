@@ -11,8 +11,8 @@
 void parse_command(const struct dc_posix_env *env, struct dc_error *err,
                    struct state *state, struct command *command)
 {
-    wordexp_t exp;
-    int status;
+    wordexp_t exp_main;
+    int status_main;
     char *string;
     regmatch_t match;
     int matched;
@@ -163,18 +163,19 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         free(str2);
         free(str);
     }
-    status = wordexp(string, &exp, 0);
-    if (status == 0)
-    {
-        command->argc = exp.we_wordc;
-        command->argv = dc_calloc(env, err, (exp.we_wordc + 2), sizeof(char *));
 
-        for (size_t i = 1; i < exp.we_wordc; ++i)
+    status_main = wordexp(string, &exp_main, 0);
+    if (status_main == 0)
+    {
+        command->argc = exp_main.we_wordc;
+        command->argv = dc_calloc(env, err, (exp_main.we_wordc + 2), sizeof(char *));
+
+        for (size_t i = 1; i < exp_main.we_wordc; ++i)
         {
-            command->argv[i] = strdup(exp.we_wordv[i]);
+            command->argv[i] = strdup(exp_main.we_wordv[i]);
         }
-        command->command = strdup(exp.we_wordv[0]);
-        wordfree(&exp);
+        command->command = strdup(exp_main.we_wordv[0]);
+        wordfree(&exp_main);
     }
     else
     {
@@ -186,34 +187,33 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
 void destroy_command(const struct dc_posix_env *env, struct command *command)
 {
+    free(command->line);
+    command->line = NULL;
 
+    free(command->command);
+    command->command = NULL;
+
+    for (size_t i = 0; i < command->argc; ++i)
+    {
+        free(command->argv[i]);
+        command->argv[i] = NULL;
+    }
+
+    free(command->argv);
+    command->argv = NULL;
+
+    command->argc = 0;
+    free(command->stdin_file);
+    command->stdin_file = NULL;
+
+    free(command->stdout_file);
+    command->stdout_file = NULL;
+
+    command->stdout_overwrite = false;
+
+    free(command->stderr_file);
+    command->stderr_file = NULL;
+
+    command->stderr_overwrite = false;
+    int exit_code;
 }
-
-
-//    sizeArray = 1;
-//    index     = 1;
-//    rest = strdup(string);
-//    temp = rest;
-//
-//    // Count number of elements by counting spaces
-//    for (size_t i = 0; i < dc_strlen(env, string); ++i)
-//    {
-//        if (isspace(string[i])) sizeArray++;
-//    }
-//
-//    // +1 for NULL element at the end
-//    argv = dc_calloc(env, err, sizeArray + 1, sizeof(char *));
-//
-//    if (dc_error_has_error(err))
-//    {
-//        state->fatal_error = true;
-//    }
-//
-//    token = strtok_r(rest, " ", &rest);
-//    command->command = strdup(token);
-//
-//    while((token = strtok_r(rest, " ", &rest)))
-//    {
-//        argv[index] = strdup(token);
-//        index++;
-//    }
