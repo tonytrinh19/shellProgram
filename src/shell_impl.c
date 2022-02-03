@@ -128,6 +128,12 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     free(state->path);
     state->path = NULL;
     free(err->message);
+    if (state->command)
+    {
+        destroy_command(env, state->command);
+        free(state->command);
+        state->command = NULL;
+    }
     return DC_FSM_EXIT;
 }
 
@@ -245,7 +251,7 @@ int execute_commands(const struct dc_posix_env *env, struct dc_error *err,
         execute(env, err, state->command, state->path);
     }
 
-    fprintf(state->stdout, "%d", state->command->exit_code);
+    fprintf(state->stdout, "%d\n", state->command->exit_code);
 
     if (state->fatal_error)
     {

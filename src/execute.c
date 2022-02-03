@@ -18,19 +18,12 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
     {
         // Child process
         int status;
-        int ret_val;
         redirect(env, err, command);
         if (dc_error_has_error(err))
         {
             exit(126);
         }
-        // call run
-        // TODO: IDK ?
         run(env, err, command, path);
-        if (dc_error_has_error(err))
-        {
-            exit(err->err_code);
-        }
         status = handle_run_error(err, command);
         exit(status);
     }
@@ -107,11 +100,11 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
 
 int run(const struct dc_posix_env *env, struct dc_error *err, struct command *command, char **path)
 {
-    if (dc_strcmp(env, command->command, "/") == 0)
+    if (dc_strchr(env, command->command, '/'))
     {
         // Not freed
         command->argv[0] = dc_strdup(env, err, command->command);
-        // TODO: something here
+        dc_execv(env, err, command->argv[0], command->argv);
     }
     else
     {
@@ -130,10 +123,15 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
                 sprintf(temp, "%s/%s", path[index], command->command);
                 cmd = dc_strdup(env, err, temp);
                 command->argv[0] = dc_strdup(env, err, cmd);
-                // TODO: something here as well
+
                 // call execv for the command
                 // If the error from execv is not ENOENT
                 //                Exit the loop
+                dc_execv(env, err, cmd, command->argv);
+                if (!dc_error_is_errno(err, ENOENT))
+                {
+                    break;
+                }
                 index++;
                 free(cmd);
                 free(temp);
@@ -144,48 +142,29 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
 
 int handle_run_error(struct dc_error *err, struct command *command)
 {
-    if (dc_error_is_errno(err, E2BIG))
+    switch (err->err_code)
     {
-        return 1;
-    }
-    if (dc_error_is_errno(err, EACCES))
-    {
-        return 2;
-    }
-    if (dc_error_is_errno(err, EINVAL))
-    {
-        return 3;
-    }
-    if (dc_error_is_errno(err, ELOOP))
-    {
-        return 4;
-    }
-    if (dc_error_is_errno(err, ENAMETOOLONG))
-    {
-        return 5;
-    }
-    if (dc_error_is_errno(err, ENOENT))
-    {
-        return 127;
-    }
-    if (dc_error_is_errno(err, ENOTDIR))
-    {
-        return 6;
-    }
-    if (dc_error_is_errno(err, ENOEXEC))
-    {
-        return 7;
-    }
-    if (dc_error_is_errno(err, ENOMEM))
-    {
-        return 8;
-    }
-    if (dc_error_is_errno(err, ETXTBSY))
-    {
-        return 9;
-    }
-    else
-    {
-        return 125;
+        case E2BIG:
+            return 1;
+        case EACCES:
+            return 2;
+        case EINVAL:
+            return 3;
+        case ELOOP:
+            return 4;
+        case ENAMETOOLONG:
+            return 5;
+        case ENOENT:
+            return 127;
+        case ENOTDIR:
+            return 6;
+        case ENOEXEC:
+            return 7;
+        case ENOMEM:
+            return 8;
+        case ETXTBSY:
+            return 9;
+        default:
+            return 125;
     }
 }

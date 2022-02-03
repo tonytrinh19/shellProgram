@@ -104,7 +104,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         }
 
         size_t size = length - offset;
-        str2 = dc_malloc(env, err, sizeof(char) * size);
+        str2 = dc_malloc(env, err, sizeof(char) * (size + 1));
         strncpy(str2, &str[offset], size);
         str2[size] = '\0';
 
