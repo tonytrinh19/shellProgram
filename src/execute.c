@@ -31,8 +31,12 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
     {
         // Main process
         int status;
-        status = waitpid(pid, NULL, 0);
-        command->exit_code = status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status))
+        {
+            const int es = WEXITSTATUS(status);
+            command->exit_code = es;
+        }
     }
 }
 
@@ -102,7 +106,6 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
 {
     if (dc_strchr(env, command->command, '/'))
     {
-        // Not freed
         command->argv[0] = dc_strdup(env, err, command->command);
         dc_execv(env, err, command->argv[0], command->argv);
     }
@@ -110,7 +113,7 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
     {
         if (!path)
         {
-            err->err_code = ENOENT;
+            DC_ERROR_RAISE_ERRNO(err, ENOENT);
         }
         else
         {
@@ -123,10 +126,6 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
                 sprintf(temp, "%s/%s", path[index], command->command);
                 cmd = dc_strdup(env, err, temp);
                 command->argv[0] = dc_strdup(env, err, cmd);
-
-                // call execv for the command
-                // If the error from execv is not ENOENT
-                //                Exit the loop
                 dc_execv(env, err, cmd, command->argv);
                 if (!dc_error_is_errno(err, ENOENT))
                 {
@@ -138,6 +137,7 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
             }
         }
     }
+    return 0;
 }
 
 int handle_run_error(struct dc_error *err, struct command *command)

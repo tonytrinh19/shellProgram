@@ -1,9 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dc_util/path.h>
-#include <dc_util/strings.h>
-#include <dc_posix/dc_string.h>
-#include <ctype.h>
 #include <dc_posix/dc_stdlib.h>
 #include <wordexp.h>
 #include "command.h"
@@ -17,15 +14,6 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
     regmatch_t match;
     int matched;
     const char *append = ">>";
-    char **argv;
-    size_t sizeArray;
-    size_t index;
-    char* token;
-    char* rest;
-    char* temp;
-    char *expanded_stdin_file;
-    char *expanded_stdout_file;
-    char *expanded_stderr_file;
 
     string  = strdup(command->line);
     matched = regexec(state->err_redirect_regex,

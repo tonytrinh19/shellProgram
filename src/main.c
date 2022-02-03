@@ -16,7 +16,6 @@
  */
 
 #include "shell.h"
-#include "shell_impl.h"
 #include <dc_application/command_line.h>
 #include <dc_application/config.h>
 #include <dc_application/options.h>
