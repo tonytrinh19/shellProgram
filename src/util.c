@@ -3,6 +3,7 @@
 #include <dc_posix/dc_stdlib.h>
 #include <stdlib.h>
 #include "util.h"
+#include "command.h"
 
 char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
 {
@@ -70,7 +71,8 @@ void do_reset_state(const struct dc_posix_env *env, struct dc_error *err, struct
     state->current_line = NULL;
     state->fatal_error = false;
     state->current_line_length = 0;
-
+    // This breaks my code though
+    destroy_command(env, state->command);
     state->command = NULL;
     dc_error_reset(err);
 }

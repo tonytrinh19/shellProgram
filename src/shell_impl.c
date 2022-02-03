@@ -6,6 +6,7 @@
 #include "shell_impl.h"
 #include "input.h"
 #include "util.h"
+#include "builtins.h"
 
 int init_state(const struct dc_posix_env *env, struct dc_error *err, void *arg)
 {
@@ -134,7 +135,7 @@ int reset_state(const struct dc_posix_env *env, struct dc_error *err,
                 void *arg)
 {
     struct state *state;
-    state = (struct state*) arg;
+    state = (struct state *) arg;
     do_reset_state(env, err, state);
     return READ_COMMANDS;
 }
@@ -207,7 +208,8 @@ int separate_commands(const struct dc_posix_env *env, struct dc_error *err,
 }
 
 int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
-                   void *arg) {
+                   void *arg)
+{
     struct state *state;
     state = (struct state *) arg;
 
@@ -228,9 +230,27 @@ int parse_commands(const struct dc_posix_env *env, struct dc_error *err,
 int execute_commands(const struct dc_posix_env *env, struct dc_error *err,
                      void *arg)
 {
+    struct state *state;
+    state = (struct state *)arg;
+    if (dc_strcmp(env, state->command->command, "cd") == 0)
+    {
+        builtin_cd(env, err, state->command, state->stderr);
+    }
+    else if(dc_strcmp(env, state->command->command, "exit") == 0)
+    {
+        return EXIT;
+    }
+    else
+    {
+        execute(env, err, state->command, state->path);
+    }
 
+    fprintf(state->stdout, "%d", state->command->exit_code);
 
-
+    if (state->fatal_error)
+    {
+        return ERROR;
+    }
     return RESET_STATE;
 }
 
@@ -240,4 +260,27 @@ int do_exit(const struct dc_posix_env *env, struct dc_error *err, void *arg)
     state = (struct state*) arg;
     do_reset_state(env, err, state);
     return DESTROY_STATE;
+}
+
+
+int handle_error(const struct dc_posix_env *env, struct dc_error *err,
+                 void *arg)
+{
+    struct state *state;
+    state = (struct state *) arg;
+
+    if (state->current_line == NULL)
+    {
+        printf("internal error %d %s\n", err->err_code, err->message);
+    }
+    else
+    {
+        printf("internal error %d %s:\n%s\n", err->err_code, err->message, state->current_line);
+    }
+
+    if (state->fatal_error)
+    {
+        return DESTROY_STATE;
+    }
+    return RESET_STATE;
 }

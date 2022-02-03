@@ -187,32 +187,34 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
 void destroy_command(const struct dc_posix_env *env, struct command *command)
 {
-    free(command->line);
-    command->line = NULL;
+    if (command){
 
-    free(command->command);
-    command->command = NULL;
+        free(command->line);
+        command->line = NULL;
 
-    for (size_t i = 0; i < command->argc; ++i)
-    {
-        free(command->argv[i]);
-        command->argv[i] = NULL;
+        free(command->command);
+        command->command = NULL;
+
+        for (size_t i = 0; i < command->argc; ++i)
+        {
+            free(command->argv[i]);
+            command->argv[i] = NULL;
+        }
+
+        free(command->argv);
+        command->argv = NULL;
+
+        command->argc = 0;
+        free(command->stdin_file);
+        command->stdin_file = NULL;
+
+        free(command->stdout_file);
+        command->stdout_file = NULL;
+
+        free(command->stderr_file);
+        command->stderr_file = NULL;
+
+        command->stdout_overwrite = false;
+        command->stderr_overwrite = false;
     }
-
-    free(command->argv);
-    command->argv = NULL;
-
-    command->argc = 0;
-    free(command->stdin_file);
-    command->stdin_file = NULL;
-
-    free(command->stdout_file);
-    command->stdout_file = NULL;
-
-    command->stdout_overwrite = false;
-
-    free(command->stderr_file);
-    command->stderr_file = NULL;
-
-    command->stderr_overwrite = false;
 }

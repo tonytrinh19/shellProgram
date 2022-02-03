@@ -45,33 +45,7 @@ int        main(int argc, char *argv[])
     struct dc_error             err;
     struct dc_application_info *info;
     int                         ret_val;
-    static struct dc_fsm_transition transitions[] = {
-            {DC_FSM_INIT, INIT_STATE, init_state},
-            {INIT_STATE, READ_COMMANDS, read_commands},
-            {INIT_STATE, ERROR, read_commands},
 
-            {READ_COMMANDS, RESET_STATE, reset_state},
-            {READ_COMMANDS, SEPARATE_COMMANDS, separate_commands},
-            {READ_COMMANDS, ERROR, handle_error},
-
-            {SEPARATE_COMMANDS, PARSE_COMMANDS, parse_commands},
-            {SEPARATE_COMMANDS, ERROR, handle_error},
-
-            {PARSE_COMMANDS, EXECUTE_COMMANDS, execute_commands},
-            {PARSE_COMMANDS, ERROR, handle_error},
-
-            {EXECUTE_COMMANDS, RESET_STATE, reset_state},
-            {EXECUTE_COMMANDS, EXIT, do_exit},
-            {EXECUTE_COMMANDS, ERROR, handle_error},
-
-            {RESET_STATE, READ_COMMANDS, read_commands},
-
-            {EXIT, DESTROY_STATE, destroy_state},
-            {ERROR, RESET_STATE, reset_state},
-            {ERROR, DESTROY_STATE, destroy_state},
-
-            {DESTROY_STATE, DC_FSM_EXIT},
-    };
 
     tracer   = NULL;
     // tracer   = dc_posix_default_tracer;
@@ -93,6 +67,8 @@ int        main(int argc, char *argv[])
                                  argv);
     dc_application_info_destroy(&env, &info);
     dc_error_reset(&err);
+
+
 
     return ret_val;
 }
