@@ -28,13 +28,13 @@ Ensure(shell, run_shell)
 
     dir = dc_get_working_dir(&environ, &error);
 
-    setenv("PS1", ">>>>", true);
-    sprintf(str, "[%s] >>>>", dir);
-    test_run_shell("exit\n", str, "");
-
-    unsetenv("PS1");
-    sprintf(str, "[%s] $ ", dir);
-    test_run_shell("exit\n", str, "");
+//    setenv("PS1", ">>>>", true);
+//    sprintf(str, "[%s] >>>>", dir);
+//    test_run_shell("exit\n", str, "");
+//
+//    unsetenv("PS1");
+//    sprintf(str, "[%s] $ ", dir);
+//    test_run_shell("exit\n", str, "");
 
     sprintf(str, "[%s] $ 0\n[/] $ ", dir);
     test_run_shell("cd /\nexit\n", str, "");

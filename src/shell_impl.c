@@ -271,11 +271,11 @@ int handle_error(const struct dc_posix_env *env, struct dc_error *err,
 
     if (state->current_line == NULL)
     {
-        printf("internal error %d %s\n", err->err_code, err->message);
+        fprintf(state->stderr,"internal error (%d) %s\n", err->err_code, err->message);
     }
     else
     {
-        printf("internal error %d %s:\n%s\n", err->err_code, err->message, state->current_line);
+        fprintf(state->stderr, "internal error (%d) %s: \"%s\"\n", err->err_code, err->message, state->current_line);
     }
 
     if (state->fatal_error)
