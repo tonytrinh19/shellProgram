@@ -21,7 +21,7 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
         redirect(env, err, command);
         if (dc_error_has_error(err))
         {
-            exit(126);
+            exit(err->err_code);
         }
         run(env, err, command, path);
         status = handle_run_error(err, command);
@@ -32,9 +32,10 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
         // Main process
         int status;
         waitpid(pid, &status, 0);
+
         if (WIFEXITED(status))
         {
-            const int es = WEXITSTATUS(status);
+            int es = WEXITSTATUS(status);
             command->exit_code = es;
         }
     }
@@ -45,14 +46,12 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
     if (command->stdin_file)
     {
         int fd;
-        fd = dc_open(env, err, command->stdin_file, DC_O_WRONLY, S_IRWXU);
-        if (dc_error_has_error(err))
+        fd = dc_open(env, err, command->stdin_file, DC_O_RDONLY, 0);
+        if (dc_error_has_no_error(err))
         {
-            dc_close(env, err, fd);
-            return;
+            dc_dup2(env, err, fd, STDIN_FILENO);
         }
-        dc_dup2(env, err, fd, STDIN_FILENO);
-        if (dc_error_has_error(err))
+        else
         {
             dc_close(env, err, fd);
             return;
@@ -66,14 +65,12 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
             option = DC_O_APPEND;
         }
         int fd;
-        fd = dc_open(env, err, command->stdout_file, DC_O_WRONLY | option, S_IRWXU);
-        if (dc_error_has_error(err))
+        fd = dc_open(env, err, command->stdout_file, DC_O_CREAT | DC_O_WRONLY | option, S_IRWXU);
+        if (dc_error_has_no_error(err))
         {
-            dc_close(env, err, fd);
-            return;
+            dc_dup2(env, err, fd, STDOUT_FILENO);
         }
-        dc_dup2(env, err, fd, STDOUT_FILENO);
-        if (dc_error_has_error(err))
+        else
         {
             dc_close(env, err, fd);
             return;
@@ -87,14 +84,12 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
             option = DC_O_APPEND;
         }
         int fd;
-        fd = dc_open(env, err, command->stderr_file, DC_O_WRONLY | option, S_IRWXU);
-        if (dc_error_has_error(err))
+        fd = dc_open(env, err, command->stderr_file, DC_O_CREAT | DC_O_WRONLY | option, S_IRWXU);
+        if (dc_error_has_no_error(err))
         {
-            dc_close(env, err, fd);
-            return;
+            dc_dup2(env, err, fd, STDERR_FILENO);
         }
-        dc_dup2(env, err, fd, STDERR_FILENO);
-        if (dc_error_has_error(err))
+        else
         {
             dc_close(env, err, fd);
             return;
@@ -111,7 +106,7 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
     }
     else
     {
-        if (!path)
+        if (!path[0])
         {
             DC_ERROR_RAISE_ERRNO(err, ENOENT);
         }
@@ -127,9 +122,12 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
                 cmd = dc_strdup(env, err, temp);
                 command->argv[0] = dc_strdup(env, err, cmd);
                 dc_execv(env, err, cmd, command->argv);
-                if (!dc_error_is_errno(err, ENOENT))
+                if (dc_error_has_error(err))
                 {
-                    break;
+                    if (!dc_error_is_errno(err, ENOENT))
+                    {
+                        break;
+                    }
                 }
                 index++;
                 free(cmd);
@@ -137,34 +135,53 @@ int run(const struct dc_posix_env *env, struct dc_error *err, struct command *co
             }
         }
     }
-    return 0;
+    return EXIT_FAILURE;
 }
 
 int handle_run_error(struct dc_error *err, struct command *command)
 {
-    switch (err->err_code)
+    if (dc_error_is_errno(err, E2BIG))
     {
-        case E2BIG:
-            return 1;
-        case EACCES:
-            return 2;
-        case EINVAL:
-            return 3;
-        case ELOOP:
-            return 4;
-        case ENAMETOOLONG:
-            return 5;
-        case ENOENT:
-            return 127;
-        case ENOTDIR:
-            return 6;
-        case ENOEXEC:
-            return 7;
-        case ENOMEM:
-            return 8;
-        case ETXTBSY:
-            return 9;
-        default:
-            return 125;
+        return 1;
+    }
+    if (dc_error_is_errno(err, EACCES))
+    {
+        return 2;
+    }
+    if (dc_error_is_errno(err, EINVAL))
+    {
+        return 3;
+    }
+    if (dc_error_is_errno(err, ELOOP))
+    {
+        return 4;
+    }
+    if (dc_error_is_errno(err, ENAMETOOLONG))
+    {
+        return 5;
+    }
+    if (dc_error_is_errno(err, ENOENT))
+    {
+        return 127;
+    }
+    if (dc_error_is_errno(err, ENOTDIR))
+    {
+        return 6;
+    }
+    if (dc_error_is_errno(err, ENOEXEC))
+    {
+        return 7;
+    }
+    if (dc_error_is_errno(err, ENOMEM))
+    {
+        return 8;
+    }
+    if (dc_error_is_errno(err, ETXTBSY))
+    {
+        return 9;
+    }
+    else
+    {
+        return 125;
     }
 }

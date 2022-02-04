@@ -175,8 +175,8 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
 
 void destroy_command(const struct dc_posix_env *env, struct command *command)
 {
-    if (command){
-
+    if (command)
+    {
         free(command->line);
         command->line = NULL;
 
