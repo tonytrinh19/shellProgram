@@ -127,13 +127,17 @@ int destroy_state(const struct dc_posix_env *env, struct dc_error *err,
     free(state->path[index]);
     free(state->path);
     state->path = NULL;
-    free(err->message);
     if (state->command)
     {
         destroy_command(env, state->command);
         free(state->command);
         state->command = NULL;
     }
+    if (dc_error_has_error(err))
+    {
+        dc_error_reset(err);
+    }
+
     return DC_FSM_EXIT;
 }
 

@@ -25,6 +25,10 @@ void execute(const struct dc_posix_env *env, struct dc_error *err, struct comman
         }
         run(env, err, command, path);
         status = handle_run_error(err, command);
+        if (status == 127)
+        {
+            fprintf(stderr, "command: %s not found\n", command->command);
+        }
         exit(status);
     }
     else
