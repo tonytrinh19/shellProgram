@@ -77,49 +77,37 @@ void redirect(const struct dc_posix_env *env, struct dc_error *err, struct comma
         {
             dc_dup2(env, err, fd, STDIN_FILENO);
         }
-        else
-        {
-            dc_close(env, err, fd);
-            return;
-        }
+        dc_close(env, err, fd);
     }
     if (command->stdout_file)
     {
         unsigned int option = DC_O_TRUNC;
+        int fd;
         if (command->stdout_overwrite)
         {
             option = DC_O_APPEND;
         }
-        int fd;
         fd = dc_open(env, err, command->stdout_file, DC_O_CREAT | DC_O_WRONLY | option, S_IRWXU);
         if (dc_error_has_no_error(err))
         {
             dc_dup2(env, err, fd, STDOUT_FILENO);
         }
-        else
-        {
-            dc_close(env, err, fd);
-            return;
-        }
+        dc_close(env, err, fd);
     }
     if (command->stderr_file)
     {
         unsigned int option = DC_O_TRUNC;
+        int fd;
         if (command->stderr_overwrite)
         {
             option = DC_O_APPEND;
         }
-        int fd;
         fd = dc_open(env, err, command->stderr_file, DC_O_CREAT | DC_O_WRONLY | option, S_IRWXU);
         if (dc_error_has_no_error(err))
         {
             dc_dup2(env, err, fd, STDERR_FILENO);
         }
-        else
-        {
-            dc_close(env, err, fd);
-            return;
-        }
+        dc_close(env, err, fd);
     }
 }
 

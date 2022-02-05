@@ -28,6 +28,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         char *str;
         wordexp_t exp;
         int status;
+        size_t size;
         // Offset of the first character of the stderr file name from the start. " 2>"
         size_t offset = 3;
 
@@ -44,7 +45,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
             command->stderr_overwrite = true;
         }
 
-        size_t size = length - offset;
+        size = length - offset;
         str2 = dc_malloc(env, err, sizeof(char) * size);
         strncpy(str2, &str[offset], size);
         str2[size] = '\0';
@@ -75,6 +76,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         char *str;
         wordexp_t exp;
         int status;
+        size_t size;
         // Offset of the first character of the stdout file name from the start. " >"
         size_t offset = 2;
 
@@ -91,7 +93,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
             command->stdout_overwrite = true;
         }
 
-        size_t size = length - offset;
+        size = length - offset;
         str2 = dc_malloc(env, err, sizeof(char) * (size + 1));
         strncpy(str2, &str[offset], size);
         str2[size] = '\0';
@@ -123,6 +125,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         char *str;
         wordexp_t exp;
         int status;
+        size_t size;
         // Offset of the first character of the stdin file name from the start. " <"
         size_t offset = 2;
 
@@ -133,7 +136,7 @@ void parse_command(const struct dc_posix_env *env, struct dc_error *err,
         string[match.rm_so] = '\0';
         str[length] = '\0';
 
-        size_t size = length - offset;
+        size = length - offset;
         str2 = dc_malloc(env, err, sizeof(char) * size);
         strncpy(str2, &str[offset], size);
         str2[size] = '\0';
