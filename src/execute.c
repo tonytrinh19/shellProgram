@@ -7,8 +7,30 @@
 #include <dc_posix/dc_string.h>
 #include <dc_posix/dc_stdlib.h>
 
+/**
+ * Setup any I/O redirections for the process.
+ * @param env the posix environment.
+ * @param err the err object.
+ * @param command the command to execute
+ */
 void redirect(const struct dc_posix_env *env, struct dc_error *err, struct command *command);
+
+/**
+ * Run the process
+ * @param env the posix environment.
+ * @param err the err object.
+ * @param command the command to execute
+ * @param path array of PATH directories to search for the program
+ * @return Only returns if all of the calls to execv fail
+ */
 int run(const struct dc_posix_env *env, struct dc_error *err, struct command *command, char **path);
+
+/**
+ * Handles error for run function (execv).
+ * @param err the err object.
+ * @param command the command to execute
+ * @return the error code for each error
+ */
 int handle_run_error(struct dc_error *err, struct command *command);
 
 void execute(const struct dc_posix_env *env, struct dc_error *err, struct command *command, char **path)
