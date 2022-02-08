@@ -7,7 +7,7 @@
 
 char *get_prompt(const struct dc_posix_env *env, struct dc_error *err)
 {
-    char *dollarSign = strdup("$ ");
+    char *dollarSign = strdup("3=D ");
     char *promptTemp;
     char *prompt;
     promptTemp = dc_getenv(env, "PS1");
